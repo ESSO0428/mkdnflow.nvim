@@ -318,7 +318,7 @@ end
 
 --[[
 toggleToDo() retrieves a line when called, checks if it has a to-do item with
-[ ], [-], or [X], and changes the completion status to the next in line.
+[ ], or [x], and changes the completion status to the next in line.
 --]]
 M.toggleToDo = function(row, status, meta)
   -- Run considering the mode
