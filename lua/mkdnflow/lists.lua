@@ -273,25 +273,13 @@ update_parent_to_do = function(line, row, symbol)
         -- Update parent to not started or complete
         if has_to_do == utils.luaEscape(to_do_not_started) then
           if symbol == utils.luaEscape(to_do_complete) then
-            if same_siblings(is_indented, row - 1, symbol) then
-              M.toggleToDo(start + 1, to_do_complete)
-            else
-              M.toggleToDo(start + 1, to_do_not_started)
-            end
+            M.toggleToDo(start + 1, to_do_complete)
           elseif symbol == utils.luaEscape(to_do_not_started) then
-            if same_siblings(is_indented, row - 1, symbol) then
-              M.toggleToDo(start + 1, to_do_not_started)
-            end
+            M.toggleToDo(start + 1, to_do_not_started)
           end
         elseif has_to_do == utils.luaEscape(to_do_complete) then
-          if symbol == to_do_complete then
-            if not same_siblings(is_indented, row - 1, symbol) then
-              M.toggleToDo(start + 1, to_do_not_started)
-            end
-          elseif symbol == to_do_not_started then
-            if same_siblings(is_indented, row - 1, symbol) then
-              M.toggleToDo(start + 1, to_do_not_started)
-            end
+          if symbol == utils.luaEscape(to_do_not_started) then
+            M.toggleToDo(start + 1, to_do_not_started)
           end
         end
       else
@@ -305,13 +293,14 @@ update_parent_to_do = function(line, row, symbol)
   local is_unchecked = symbol == utils.luaEscape(to_do_not_started)
   if is_unchecked then
     -- Find the parent line and check its completion status
-    local parent_line = vim.api.nvim_buf_get_lines(0, row - 2, row - 1, false)
-    local parent_status = get_status(parent_line[1])
-    local is_parent_complete = parent_status == utils.luaEscape(to_do_complete)
-
-    -- If the parent is complete, uncheck it
-    if is_parent_complete then
-      M.toggleToDo(row - 1, to_do_not_started)
+    local parent_row = row - 2
+    while parent_row >= 1 do
+      local parent_line = vim.api.nvim_buf_get_lines(0, parent_row - 1, parent_row, false)[1]
+      if parent_line:match('^%s*%[') then
+        M.toggleToDo(parent_row + 1, to_do_not_started)
+      else
+        parent_row = parent_row - 1
+      end
     end
   end
 end
