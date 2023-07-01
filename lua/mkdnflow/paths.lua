@@ -24,6 +24,7 @@ local this_os_err = '⬇️ Function unavailable for ' .. this_os .. '. Please f
 local sep = this_os:match('Windows') and '\\' or '/'
 -- Get config setting for whether to make missing directories or not
 local create_dirs = require('mkdnflow').config.create_dirs
+local hijack_dirs = require('mkdnflow').config.hijack_dirs
 -- Get config setting for where links should be relative to
 local perspective = require('mkdnflow').config.perspective
 -- Get directory of first-opened file
@@ -95,6 +96,7 @@ local resolve_notebook_path = function(path, sub_home_var)
     end
   else -- For non-Windows OS, replace '^./' with current file's directory absolute path
     derived_path = derived_path:gsub('^%./', cur_file_dir_abs_path .. '/')
+    derived_path = derived_path:gsub('^%.%.%/', cur_file_dir_abs_path .. '/../')
   end
   -- Decide what to pass to internal_open function
   if derived_path:match('^~/') or derived_path:match('^/') or derived_path:match('^%u:\\') then
@@ -178,7 +180,11 @@ local internal_open = function(path, anchor)
   end
   if exists(path, 'd') and not exists(path_w_ext, 'f') then
     -- Looks like this links to a directory, possibly a notebook
-    enter_internal_path(path)
+    if hijack_dirs then
+      vim.cmd(':e ' .. path_w_ext)
+    else
+      enter_internal_path(path)
+    end
   else
     -- Push the current buffer name onto the main buffer stack
     buffers.push(buffers.main, vim.api.nvim_win_get_buf(0))
