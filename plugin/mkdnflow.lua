@@ -71,3 +71,10 @@ if vim.fn.exists('g:loaded_mkdnflow') == 0 then
     -- Record that the plugin has been loaded
     vim.api.nvim_set_var('loaded_mkdnflow', true)
 end
+
+vim.cmd([[
+augroup MarkdownFolding
+  autocmd!
+  autocmd FileType markdown setlocal foldmethod=manual
+augroup END
+]])
