@@ -190,6 +190,8 @@ _G.mkdnflowFoldFunction = function(line_number)
     return 1 -- Header level
   elseif not success and isMarkdownHeader(line) then
     return 1
+  elseif line == '' and success then
+    return 1
   elseif line == '' and (isMarkdownHeader(next_line) or (next_line_success and isTreesitterHeader(next_capture))) then
     return 0
   elseif isIndented(line) or (next_line and isIndented(next_line)) then
