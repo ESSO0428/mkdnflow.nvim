@@ -48,7 +48,6 @@ M.getHeadingLevel = function(line, current_line)
     if ts_success then
       level = nil
     else
-      print('f')
       level = line:match('^(#+)%s')
     end
   end
