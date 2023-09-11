@@ -166,8 +166,15 @@ local function getCapture(line_number)
 end
 
 -- Check if a line is a markdown header
-local function isMarkdownHeader(line)
-  return string.find(line, '^#+%s') ~= nil
+local function isMarkdownHeader(line, line_number, readCurrentLine)
+  local start, finish = string.find(line, '^(#+)%s')
+  local reference_md_level = 0
+  if start then
+    reference_md_level = #finish - #start + 1 -- Calculate the number of '#' characters
+    M.reference_md_level = reference_md_level
+    return true
+  end
+  return false
 end
 
 -- Check if a line starts with 4 spaces or a tab
@@ -176,35 +183,68 @@ local function isIndented(line)
 end
 
 -- Check if a line is a header using treesitter
-local function isTreesitterHeader(capture)
-  return capture:match('text.title.(%d).marker') ~= nil
+local function isTreesitterHeader(capture, line_number, readCurrentLine)
+  -- print(line_number)
+  local reference_md_level = tonumber(capture:match('text.title.(%d).marker'))
+  if reference_md_level ~= nil then
+    M.reference_md_level = reference_md_level
+    return true
+  end
+  return false
 end
 
-_G.mkdnflowFoldFunction = function(line_number)
-  local success, capture = pcall(getCapture, line_number - 1) -- Adjusting for 0-based index
-  local next_line_success, next_capture = pcall(getCapture, line_number)
-  local line = vim.api.nvim_buf_get_lines(0, line_number - 1, line_number, false)[1]
-  local next_line = vim.api.nvim_buf_get_lines(0, line_number, line_number + 1, false)[1]
-
-  if success and isTreesitterHeader(capture) then
-    return 1 -- Header level
-  elseif not success and isMarkdownHeader(line) then
-    return 1
-  elseif line == '' and success then
-    return 1
-  elseif line == '' and (isMarkdownHeader(next_line) or (next_line_success and isTreesitterHeader(next_capture))) then
-    return 0
-  elseif isIndented(line) or (next_line and isIndented(next_line)) then
-    return 2 -- Contents level
-  else
-    return 1
+local function fillZerosWithPreviousNumber(list)
+  local last_number = nil
+  for i, value in ipairs(list) do
+    if value ~= 0 then
+      last_number = value
+    else
+      if last_number then
+        if i < #list and list[i + 1] == last_number then
+          value = last_number - 1
+          if value >= 0 then
+            list[i] = value
+          else
+            list[i] = 0
+          end
+        elseif i < #list and list[i + 1] < last_number and list[i + 1] ~= 0 then
+          list[i] = 0
+        else
+          list[i] = last_number
+        end
+      end
+    end
   end
+  return list
+end
 
-  return 2 -- Default fold level
+M.fold_levels = {}
+_G.mkdnflowFoldFunction = function(line_number)
+  local total_lines = vim.api.nvim_buf_line_count(0)
+
+  -- Only populate the fold_levels list during the first invocation
+  if line_number == 1 and #M.fold_levels == 0 then
+    for current_line = 1, total_lines do
+      local success, capture = pcall(getCapture, current_line - 1)
+      local line_content = vim.api.nvim_buf_get_lines(0, current_line - 1, current_line, false)[1]
+
+      if success and isTreesitterHeader(capture, current_line, true) then
+        table.insert(M.fold_levels, M.reference_md_level)
+      elseif not success and isMarkdownHeader(line_content, current_line, true) then
+        table.insert(M.fold_levels, M.reference_md_level)
+      else
+        table.insert(M.fold_levels, 0)
+      end
+    end
+    M.fold_levels = fillZerosWithPreviousNumber(M.fold_levels)
+  end
+  -- Return the fold level for the current line_number
+  return M.fold_levels[line_number] or 2 -- default to 2 if not found
 end
 
 M.foldCycle = function()
   -- Set the fold method to expression and use the foldFunction to determine fold levels
+  M.fold_levels = {}
   vim.cmd("set foldmethod=expr")
   vim.cmd("set foldexpr=v:lua._G.mkdnflowFoldFunction(v:lnum)")
 
