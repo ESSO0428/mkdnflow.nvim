@@ -19,21 +19,6 @@ The plugin is an extended set of functions and mappings to those functions which
 
 I keep tabs on the project's [issues](https://github.com/jakewvincent/mkdnflow.nvim/issues) and appreciate feature requests, suggestions, and bug reports. I invite you to use the [discussion board](https://github.com/jakewvincent/mkdnflow.nvim/discussions) if you would like to share your config, share how Mkdnflow fits into your workflow, get help with setup, or contribute feature suggestions or optimizations. Contributions to the plugin are welcome: fork this repo and submit a [pull request](https://github.com/jakewvincent/mkdnflow.nvim/pulls) with your changes or additions. For Lua resources, see [this page](https://neovim.io/doc/lua-resources/) or call `:h lua` or `:h api` in Neovim.
 
-* New Features
-   * VSCode Format Support (2023-09-28):
-      ```
-      #Open ~/file.py
-      [file.py](///home/username/file.py)
-      [file.py](//~/file.py)
-      
-      #Open /root/.bashrc
-      [.bashrc](///root/.bashrc)
-      
-      #Open directory
-      [dir: research](//~/research/)
-      [dir: research](///home/username/research/)
-      ```
-
 ### ⚡ Requirements
 
 * Linux, macOS, or Windows
