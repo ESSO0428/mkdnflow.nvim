@@ -144,6 +144,10 @@ internal_open() takes a path to a notebook-internal file and (optionally) an
 anchor and opens it in nvim.
 --]]
 local internal_open = function(path, anchor)
+  -- Adjust path format to support VSCode's absolute path notation.
+  -- In VSCode, paths can start with '//' to denote an absolute path.
+  -- Here, we're removing this prefix to make it compatible with our editor.
+  path = string.gsub(path, '^//', '')
   if this_os:match('Windows') then
     path = path:gsub('/', '\\')
   end
