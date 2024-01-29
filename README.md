@@ -26,7 +26,7 @@ I keep tabs on the project's [issues](https://github.com/jakewvincent/mkdnflow.n
 * Optional: If you wish to use UTF-8 symbols as [custom to-do symbols](#to_do-dictionary-like-table), in [tables that you wish to have Mkdnflow format](#tables-dictionary-like-table), or in anchor links, you'll need the luarocks module [`luautf8`](https://luarocks.org/modules/xavier-wang/luautf8). Luarocks dependencies can be installed via [Packer](#initlua) using the `rocks` key:
 
 ```lua
-use({'jakewvincent/mkdnflow.nvim',
+use({'ESSO0428/mkdnflow.nvim',
     rocks = 'luautf8', -- Ensures optional luautf8 dependency is installed
     config = function()
         require('mkdnflow').setup()
@@ -265,7 +265,7 @@ bib:
 <summary>Install with Packer</summary><p>
 
 ```lua
-use({'jakewvincent/mkdnflow.nvim',
+use({'ESSO0428/mkdnflow.nvim',
      config = function()
         require('mkdnflow').setup({
             -- Config goes here; leave blank for defaults
@@ -277,7 +277,7 @@ use({'jakewvincent/mkdnflow.nvim',
 #### If you wish to use custom UTF-8 to-do symbols, add the luautf8 luarock dependency
 
 ```lua
-use({'jakewvincent/mkdnflow.nvim',
+use({'ESSO0428/mkdnflow.nvim',
      rocks = 'luautf8',
      config = function()
         require('mkdnflow').setup({
@@ -295,7 +295,7 @@ use({'jakewvincent/mkdnflow.nvim',
 ```lua
 require('paq')({
     -- Your other plugins;
-    'jakewvincent/mkdnflow.nvim';
+    'ESSO0428/mkdnflow.nvim';
     -- Your other plugins;
 })
 
@@ -315,19 +315,19 @@ require('mkdnflow').setup({
 
 ```vim
 " Vim-Plug
-Plug 'jakewvincent/mkdnflow.nvim'
+Plug 'ESSO0428/mkdnflow.nvim'
 
 " NeoBundle
-NeoBundle 'jakewvincent/mkdnflow.nvim'
+NeoBundle 'ESSO0428/mkdnflow.nvim'
 
 " Vundle
-Bundle 'jakewvincent/mkdnflow.nvim'
+Bundle 'ESSO0428/mkdnflow.nvim'
 
 " Pathogen
 git clone https://github.com/jakewvincent/mkdnflow.nvim.git ~/.vim/bundle/mkdownflow.nvim
 
 " Dein
-call dein#add('jakewvincent/mkdnflow.nvim')
+call dein#add('ESSO0428/mkdnflow.nvim')
 
 " Include the setup function somewhere else in your init.vim file, or the
 " plugin won't activate itself:
