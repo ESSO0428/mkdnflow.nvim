@@ -28,21 +28,20 @@ local M = {}
 
 local ts_success, ts_result_or_error = pcall(require, 'nvim-treesitter.ts_utils')
 
+-- Function to get capture using treesitter
+local function getCapture(current_line)
+  -- return vim.inspect_pos(0, current_line).treesitter[1].capture
+  return vim.inspect_pos(0, current_line, 0, nil).treesitter[1].capture
+end
 
 M.getHeadingLevel = function(line, current_line)
   local current_line = current_line - 1
-  local function getCapture(current_line)
-    -- return vim.inspect_pos(0, current_line).treesitter[1].capture
-    return vim.inspect_pos(0, current_line, 0, nil).treesitter[1].capture
-  end
-  ---[[
   local success, capture = pcall(getCapture, current_line)
+  local level
   if success and capture then
-    local num = capture:match('text.title.(%d).marker')
+    local num = capture:match('text.title.(%d).marker') or capture:match('markup.heading.(%d)')
     if num then
-      -- level = tonumber(num)
       level = line:match('^(#+)%s')
-      -- print(level)
     end
   else
     if ts_success then
@@ -52,7 +51,7 @@ M.getHeadingLevel = function(line, current_line)
     end
   end
   local level_v = (level and string.len(level)) or 99
-  if level_v == 1 and not capture:match('text.title') then
+  if level_v == 1 and not capture:match('text.title') and not capture:match('markup.heading') then
     level_v = 99
   end
   local matched = line:match('^(#+)%s')
@@ -60,7 +59,6 @@ M.getHeadingLevel = function(line, current_line)
   else
     level_v = 99
   end
-  -- print(line, level_v)
   return level_v
 end
 
@@ -80,9 +78,11 @@ local get_section_range = function(start_row)
         else
           end_row = end_row + 1
         end
-      elseif end_row <= n_lines then -- Line might just be empty; make sure we're not at end of buffer
+        -- Line might just be empty; make sure we're not at end of buffer
+      elseif end_row <= n_lines then
         end_row = end_row + 1
-      else                           -- End of buffer reached
+        -- End of buffer reached
+      else
         continue = false
       end
     end
@@ -103,24 +103,6 @@ local get_nearest_heading = function()
     end
   end
 end
-
--- M.foldSection = function()
---     local line = vim.api.nvim_get_current_line()
---     if M.getHeadingLevel(line) < 99 then
---         local range = get_section_range()
---         if range then
---             vim.cmd(tostring(range[1])..','..tostring(range[2])..'fold')
---         end
---     else
---         local start_row = get_nearest_heading()
---         if start_row then
---             local range = get_section_range(start_row)
---             if range then
---                 vim.cmd(tostring(range[1])..','..tostring(range[2])..'fold')
---             end
---         end
---     end
--- end
 
 M.foldSection = function()
   local line = vim.fn.line('.')
@@ -158,19 +140,16 @@ M.unfoldSection = function(row)
   end
 end
 
-M.global_cycle_mode = 'Overview' -- Initial state
-
--- Function to get capture using treesitter
-local function getCapture(line_number)
-  return vim.inspect_pos(0, line_number, 0, nil).treesitter[1].capture
-end
+-- Initial state
+M.global_cycle_mode = 'Overview'
 
 -- Check if a line is a markdown header
 local function isMarkdownHeader(line, line_number, readCurrentLine)
   local start, finish = string.find(line, '^(#+)%s')
   local reference_md_level = 0
   if start then
-    reference_md_level = #finish - #start + 1 -- Calculate the number of '#' characters
+    -- Calculate the number of '#' characters
+    reference_md_level = #finish - #start + 1
     M.reference_md_level = reference_md_level
     return true
   end
@@ -184,8 +163,8 @@ end
 
 -- Check if a line is a header using treesitter
 local function isTreesitterHeader(capture, line_number, readCurrentLine)
-  -- print(line_number)
-  local reference_md_level = tonumber(capture:match('text.title.(%d).marker'))
+  local reference_md_level = tonumber(capture:match('text.title.(%d).marker')) or
+      tonumber(capture:match('markup.heading.(%d)'))
   if reference_md_level ~= nil then
     M.reference_md_level = reference_md_level
     return true
@@ -239,7 +218,8 @@ _G.mkdnflowFoldFunction = function(line_number)
     M.fold_levels = fillZerosWithPreviousNumber(M.fold_levels)
   end
   -- Return the fold level for the current line_number
-  return M.fold_levels[line_number] or 2 -- default to 2 if not found
+  -- default to 2 if not found
+  return M.fold_levels[line_number] or 2
 end
 
 M.foldCycle = function()
@@ -258,7 +238,8 @@ M.foldCycle = function()
     vim.api.nvim_out_write("[mkdnflow] Contents\n")
     vim.wo.foldlevel = 1
     vim.cmd([[silent! norm!zx]])
-  else -- Contents
+    -- Contents
+  else
     M.global_cycle_mode = 'Show All'
     vim.api.nvim_out_write("[mkdnflow] Show All\n")
     vim.cmd([[silent! norm!zR]])
