@@ -156,9 +156,9 @@ local function isMarkdownHeader(line, line_number, readCurrentLine)
   return false
 end
 
--- Check if a line starts with 4 spaces or a tab
+-- Check if a line starts with tabstop size (ex: 4 spaces) or a tab
 local function isIndented(line)
-  return line:match("^    ") or line:match("^\t")
+  return line:match("^" .. string.rep(" ", vim.o.tabstop)) or line:match("^\t")
 end
 
 -- Check if a line is a header using treesitter
